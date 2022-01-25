@@ -1,8 +1,7 @@
 # dipole-fit
-Reconstruction of coil dipole models from magnetic flux density measurements
+## Reconstruction of coil dipole models from magnetic flux density measurements
 
-For more information about the method see:
-
+For more information about the method see:  
 Electric Field Models of Transcranial Magnetic Stimulation Coils with Arbitrary Geometries: Reconstruction from Incomplete Magnetic Field Measurements  
 https://arxiv.org/abs/2112.14548  
 Please cite the above when using the method in publications.
