@@ -56,11 +56,12 @@ def readccd(fn):
        0.001 C*m*s/A
     """
     dat = np.loadtxt(fn, skiprows=3)    
-    mpos = dat[:,:3]
-    m = dat[:,3:]
-    return (mpos, m)
+    mpos = dat[:, :3]
+    m = dat[:, 3:]
+    return mpos, m
 
-def writeccd(fn,mpos,m,extra=''):
+
+def writeccd(fn, mpos, m, extra=''):
     """
     Very basic functionality to write ccd files
 
@@ -80,18 +81,18 @@ def writeccd(fn,mpos,m,extra=''):
     None.
 
     """
-    N=m.shape[0]
-    f=open(fn,'w')
-    f.write('# %s version 1.1;%s\n'%(fn,extra))
-    f.write('%i\n'%N)
+    N = m.shape[0]
+    f = open(fn, 'w')
+    f.write('# %s version 1.1;%s\n' % (fn, extra))
+    f.write('%i\n' % N)
     f.write('# centers and weighted directions of the elements (magnetic dipoles)\n')
     for i in range(N):
-        f.write('%.15e %.15e %.15e '%tuple(mpos[i]))
-        f.write('%.15e %.15e %.15e\n'%tuple(m[i]))
+        f.write('%.15e %.15e %.15e ' % tuple(mpos[i]))
+        f.write('%.15e %.15e %.15e\n' % tuple(m[i]))
     f.close()
         
 
-def ABdip(points,Dpos,calcA=True,calcB=True,verbose=False):
+def ABdip(points, Dpos, calcA=True, calcB=True, verbose=False):
     """
     Leadfield A and B field for dipoles
 
@@ -113,19 +114,20 @@ def ABdip(points,Dpos,calcA=True,calcB=True,verbose=False):
     ndarrays cotaining A and/or B lead fields depending on calcA and calcB
 
     """
-    tt=time.time()
-    points=np.asarray(points)
-    Dpos=np.asarray(Dpos)
+    tt = time.time()
+    points = np.asarray(points)
+    Dpos = np.asarray(Dpos)
 
     if calcB:
-        B=np.zeros((3,points.shape[0],3,Dpos.shape[0]),dtype=np.float64,order='C')
+        B = np.zeros((3, points.shape[0], 3, Dpos.shape[0]), dtype=np.float64, order='C')
     if calcA:
-       A=np.zeros((3,points.shape[0],3,Dpos.shape[0]),dtype=np.float64,order='C')
-    if not(calcA) and not(calcB): return None    
-    rv=points[:,None,:]-Dpos[None,...]
-    r=((rv**2).sum(2)**0.5)[...,None]
-    ir=1.0e-7*r**(-3)
-    re=rv/r
+        A = np.zeros((3, points.shape[0], 3, Dpos.shape[0]), dtype=np.float64, order='C')
+    if not(calcA) and not(calcB):
+        return None
+    rv = points[:, None, :] - Dpos[None, ...]
+    r = ((rv**2).sum(2)**0.5)[..., None]
+    ir = 1.0e-7*r**(-3)
+    re = rv/r
     if calcB:
         B[0,:,0,:] =                (3.*(re[...,0]*re[...,0])-1.)*ir[...,0]
         B[0,:,1,:] = B[1,:,0,:] = (3.*(re[...,1]*re[...,0]))   *ir[...,0]
@@ -151,11 +153,14 @@ def ABdip(points,Dpos,calcA=True,calcB=True,verbose=False):
         print('time passed: %.2fs'%(time.time()-tt))
     
     if calcB:
-        if calcA: return (A,B)
-        else: return B
-    else: return A
+        if calcA:
+            return (A,B)
+        else:
+            return B
+    else:
+        return A
 
-def ABdip_z(points,Dpos,calcA=True,calcB=True,verbose=False):
+def ABdip_z(points, Dpos, calcA=True, calcB=True, verbose=False):
     """
     Leadfield A and B field for dipoles z direction only
 
@@ -177,18 +182,19 @@ def ABdip_z(points,Dpos,calcA=True,calcB=True,verbose=False):
     ndarrays cotaining A and/or B lead fields depending on calcA and calcB
 
     """
-    tt=time.time()
-    points=np.asarray(points)
-    Dpos=np.asarray(Dpos)
+    tt = time.time()
+    points = np.asarray(points)
+    Dpos = np.asarray(Dpos)
     if calcB:
-        B=np.zeros((3,points.shape[0],Dpos.shape[0]),dtype=np.float64,order='C')
+        B = np.zeros((3, points.shape[0], Dpos.shape[0]), dtype=np.float64, order='C')
     if calcA:
-        A=np.zeros((3,points.shape[0],Dpos.shape[0]),dtype=np.float64,order='C')
-    if not(calcA) and not(calcB): return None    
-    rv=points[:,None,:]-Dpos[None,...]
-    r=((rv**2).sum(2)**0.5)[...,None]
-    ir=1.0e-7*r**(-3)
-    re=rv/r
+        A = np.zeros((3, points.shape[0], Dpos.shape[0]), dtype=np.float64, order='C')
+    if not(calcA) and not(calcB):
+        return None
+    rv = points[:, None, :] - Dpos[None, ...]
+    r = ((rv**2).sum(2)**0.5)[..., None]
+    ir = 1.0e-7*r**(-3)
+    re = rv/r
     if calcB:
         B[0,:,:] = (3.*(re[...,2]*re[...,0]))   *ir[...,0]
         B[1,:,:] = (3.*(re[...,2]*re[...,1]))   *ir[...,0]
@@ -299,66 +305,66 @@ def fit_coil_Nsplit(pos, coilcoords, Bs, n=2, flat=True, plotfn=None,alphas=np.l
         index of alpha for best PR tradeoff for each B field input, for plotting
 
     """
-    #just grab the first B
+    # just grab the first B
     Bin = Bs[0]
-    #number of B field measurements (each 3 dimensions)
+    # number of B field measurements (each 3 dimensions)
     Mn = int(Bin.shape[0])
-    #fraction for splitting
+    # fraction for splitting
     SplitFrac = 1. / n
-    #indices for permuting measurements
+    # indices for permuting measurements
     idx = np.random.permutation(np.arange(Mn))
-    #get random indices for splitting
+    # get random indices for splitting
     idx_splits = [idx[int(i * SplitFrac * Mn):int(SplitFrac * (i + 1) * Mn)] for i in range(n)]
     
-    #K, number of dipoles
+    # K, number of dipoles
     if flat:
         K = int(coilcoords.shape[1])
     else:
         K = 3 * int(coilcoords.shape[1])
-    #number of B field measurements (typically just one)
+    # number of B field measurements (typically just one)
     M = len(Bs)
-    #initialize solutions and place holder for unexplained variance
+    # initialize solutions and place holder for unexplained variance
     sols = np.zeros((M,n, len(alphas),K),dtype=np.float64)
-    #unexpl variance for each B, a splits by splits matrix for each alpha
+    # unexpl variance for each B, a splits by splits matrix for each alpha
     uexpl_var = np.zeros((M,n, n, len(alphas)))
-    #loop over splits
+    # loop over splits
     for i in range(n):
         print('Split %i of %i' % (i+1,n))
-        #get B leadfield
+        # get B leadfield
         if flat:
             XB = ABdip_z(pos[idx_splits[i]], coilcoords.T, calcB=True, calcA=False)
         else:
             XB = ABdip(pos[idx_splits[i]], coilcoords.T, calcB=True, calcA=False)
-        #N, no of measurements for split (B field 3 times B field positions)
+        # N, no of measurements for split (B field 3 times B field positions)
         N = 3 * len(idx_splits[i])
-        #unfold across dimensions to create design matrix for linear problem
+        # unfold across dimensions to create design matrix for linear problem
         XB = XB.reshape(N,K)
         t0=time.time()
         # perform SVD for design matrix (allows fast solution for all alphas)
         U, s, Vt = sp.linalg.svd(XB,full_matrices=False)
         print('SVD time: %.1fs'%(time.time()-t0))
-        #vectorize actual measurements for split
+        # vectorize actual measurements for split
         Bt = np.array([Bs[m][idx_splits[i]].T.reshape(N) for m in range(M)]).T
         UtB = U.T@Bt
-        #function to solve for each aplha
+        # function to solve for each aplha
         l2solve = lambda a:((s / (s ** 2 + a))*UtB.T)@Vt
-        #solve for each alpha
+        # solve for each alpha
         for j, a in enumerate(alphas):
             sols[:,i,j] = l2solve(a)
         BtB = np.sum(Bt**2,axis=0)
-        #function to calculate fraction of sum of sqaures error
+        # function to calculate fraction of sum of sqaures error
         def err(J):
             return np.sum(((J@XB.T).reshape(Bt.shape[1],-1,Bt.shape[0])-
                            Bt.T[:,None,:])**2,axis=-1)/BtB[:,None]
-        #calculate explained variance for each alpha for the previous solutions
-        #for first split this would basically just be the unexplained variance within split
-        #this within split variance is not actually used for anything, but next split it would be
-        #both the one within split and between split 1 and 2, in effect this fills the lower 
-        #triangular part of of the split by split unexpected variance matrix for each alpha
+        # calculate explained variance for each alpha for the previous solutions
+        # for first split this would basically just be the unexplained variance within split
+        # this within split variance is not actually used for anything, but next split it would be
+        # both the one within split and between split 1 and 2, in effect this fills the lower
+        # triangular part of of the split by split unexpected variance matrix for each alpha
         for j, sol in enumerate(sols[0,:i+1]):
             uexpl_var[:,i,j,:] = err(sols[:,j].reshape(-1,sols.shape[-1]))
-    #this fills the upper triangular part of the above, this is basically done in this way
-    #to lower memory requirements. The old leadfield is formed again and the identified solution is used.    
+    # this fills the upper triangular part of the above, this is basically done in this way
+    # to lower memory requirements. The old leadfield is formed again and the identified solution is used.
     for i in range(n-1):
         print('Calculating test error pairs %i of %i' % (i+1,n-1))
         if flat:
@@ -374,17 +380,17 @@ def fit_coil_Nsplit(pos, coilcoords, Bs, n=2, flat=True, plotfn=None,alphas=np.l
                            Bt.T[:,None,:])**2,axis=-1)/BtB[:,None]
         for j, sol in enumerate(sols[0,i+1:]):
             uexpl_var[:,i,j+i+1,:] = err(sols[:,i+1+j].reshape(-1,sols.shape[-1]))
-    #Calculate relative mean squared error
+    # Calculate relative mean squared error
     expl_MSE = 1 - (uexpl_var)
-    #initialize variable for MSE/correlation between solutions (reliability)
+    # initialize variable for MSE/correlation between solutions (reliability)
     corrA=np.zeros((M,len(alphas),n,n))
   
     solution=[]
     testerrv=[]
     mcorrv=[]
     propt=[]
-    #calculate all pairwise reliabilities, in principle there is no reason to calculate the diagonal,
-    #which is 1 and also only the upper triangular part is needed as it is symmetric.
+    # calculate all pairwise reliabilities, in principle there is no reason to calculate the diagonal,
+    # which is 1 and also only the upper triangular part is needed as it is symmetric.
     for m in range(M):
         for j, a in enumerate(alphas):
             for i in range(n):
