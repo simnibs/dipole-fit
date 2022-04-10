@@ -110,7 +110,7 @@ def ABdip(points,Dpos,calcA=True,calcB=True,verbose=False):
 
     Returns
     -------
-    ndarrays cotaining A and/or B lead fields depending on calcA and calcB
+    ndarrays containing A and/or B lead fields depending on calcA and calcB
 
     """
     tt=time.time()
@@ -127,14 +127,14 @@ def ABdip(points,Dpos,calcA=True,calcB=True,verbose=False):
     ir=1.0e-7*r**(-3)
     re=rv/r
     if calcB:
-        B[0,:,0,:] =                (3.*(re[...,0]*re[...,0])-1.)*ir[...,0]
+        B[0,:,0,:] =              (3.*(re[...,0]*re[...,0])-1.)*ir[...,0]
         B[0,:,1,:] = B[1,:,0,:] = (3.*(re[...,1]*re[...,0]))   *ir[...,0]
         B[0,:,2,:] = B[2,:,0,:] = (3.*(re[...,2]*re[...,0]))   *ir[...,0]
         
-        B[1,:,1,:] =                (3.*(re[...,1]*re[...,1])-1.)*ir[...,0]
+        B[1,:,1,:] =              (3.*(re[...,1]*re[...,1])-1.)*ir[...,0]
         B[1,:,2,:] = B[2,:,1,:] = (3.*(re[...,2]*re[...,1]))   *ir[...,0]
         
-        B[2,:,2,:] =                (3.*(re[...,2]*re[...,2])-1.)*ir[...,0]
+        B[2,:,2,:] =              (3.*(re[...,2]*re[...,2])-1.)*ir[...,0]
     if calcA:
         A[0,:,0,:] = 0. 
         A[0,:,1,:] =  re[...,2]*ir[...,0]*r[...,0]
