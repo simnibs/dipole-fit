@@ -72,8 +72,8 @@ coilcoords = coilcoords[:,cidx]
 #expected runtime on modern computer (year 2020) a few minutes.
 solutions,out_real=cf.fit_coil_Nsplit(pos, coilcoords, [B], n=2, flat=False, plotfn=None)
 #reshape and transpose to form ndip x 3 array
-dip_moments = solutions[0].reshape(3,-1).T
+dip_moments = solutions[0].reshape(3, -1).T
 
 #write ccd file to disk
-ccdfile='coildata/MagVenture_MC-B70_dipole-fit.ccd'
+ccdfile = 'coildata/MagVenture_MC-B70_dipole-fit.ccd'
 cf.writeccd(ccdfile, coilcoords.T, dip_moments)
