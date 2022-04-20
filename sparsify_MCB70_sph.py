@@ -45,14 +45,14 @@ cpath = sc.sparsify(ccdfile, pos, coilcoords.T, max_n=500)
 
 ## Produce dipoles vs. reconstruction tradeoff graph via CV
 #First create some additional points in front of coil for CV
-pos_cv = sc.get_sph_points(r=85,d=5)[:,:5000].T / 1000.
+pos_cv = sc.get_sph_points(r=85, d=5)[:, :5000].T / 1000.
 #placehoder for coefficients of variation
 R_cv = []
 #placehoder for number of active dipoles
 n = []
 #Calculate A field in CV positions
 dip_pos0, dip_moment0 = cf.readccd(ccdfile)
-Afull = sc.A_from_dipoles(dip_moment0,dip_pos0,pos_cv)
+Afull = sc.A_from_dipoles(dip_moment0, dip_pos0, pos_cv)
 
 #loop over sparsification levels
 for i in range(1,cpath.shape[1],1):
@@ -61,29 +61,43 @@ for i in range(1,cpath.shape[1],1):
     #calculate A from sparse model
     Asparse = sc.A_from_dipoles(cpath[:,i].reshape(3,-1).T[idx], coilcoords.T[idx], pos_cv)
     #coefficient of variation
-    R_cv.append(((Asparse-Afull)**2).sum()/(Afull**2).sum())
+    R_cv.append(1-((Asparse-Afull)**2).sum()/(Afull**2).sum())
     #active dipoles
     n.append(idx.sum())
 
+dmin = 5 #minimum distance
+dmax = 84. #maximum distance
+dres = 0.25 #distance resolution
+tol = 1e-2 #required tolerance
+#Vector of distances
+dists = np.arange(dmin, dmax + dres, dres)
+# Generate points of surface at various distances
+epos = np.concatenate([sc.get_surf_points(r=85, d=d, N_gen=1500)[:,:1000,None] for d in dists], axis=2)
+# Calculate A field for full model
+Afull = sc.A_from_dipoles(dip_moment0, dip_pos0, epos.reshape(3, -1).T)
+Afull = Afull.reshape(epos.shape[1:] + (3,))
+# Place holder for errors
+errA = []
+#loop over sparsification levels
+for i in range(1,cpath.shape[1],1):
+    #find active dipoles
+    idx = np.any(cpath[:,i].reshape(3,-1)!=0,axis=0)
+    #calculate A from sparse model per distance
+    Asparse = sc.A_from_dipoles(cpath[:, i].reshape(3, -1).T[idx], coilcoords.T[idx], epos.reshape(3, -1).T)
+    Asparse = Asparse.reshape(epos.shape[1:] + (3,))
+    errA.append(((Asparse - Afull) ** 2).sum((0, 2)) / (Afull ** 2).sum((0, 2)))
+
+# Produce plot of residual variance vs. number of active dipoles
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.figure()
-plt.plot(n,R_cv)
+plt.plot(n,1-np.array(R_cv))
 plt.yscale('log')
-
-
-sdfas
-def get_sph_points_surf(d=10,dx=40,N=2000):
-    r = 85
-    sph_center = np.array((0, 0, r))
-    sph_radius = r - d
-    epos=np.random.rand(3,100000)-.5
-    r=np.sqrt(np.sum(epos**2,0))
-    epos=epos[:,r>0.01]/r[r>0.01]*sph_radius
-    epos=(epos[:,(np.sqrt(np.abs(epos[0])**2+np.abs(epos[1])**2)<=dx)&(epos[2]<0)]+sph_center[:,None])/1000.    
-    epos=epos[:,:N]
-    return epos
-
-
+plt.xlabel('# dipoles')
+plt.ylabel(r'Fraction of residual variance')
+plt.show()
+asdad
 ds=(5,10,20)
 epos=np.concatenate([get_sph_points_surf(d,dx=100)[...,None] for d in ds],axis=2)
 Afull = ccd2nifti.A_from_dipoles(dip_moment0,dip_pos0,epos.reshape(3,-1).T)
@@ -91,6 +105,7 @@ Afull = Afull.reshape(epos.shape[1:]+(3,))
 Bfull = ccd2nifti.B_from_dipoles(dip_moment0,dip_pos0,epos.reshape(3,-1).T)
 Bfull = Bfull.reshape(epos.shape[1:]+(3,))
 Acurve = np.zeros((len(ds),cpath.shape[1]))
+Acurve[:,i] = ((Asparse-Afull)**2).sum((0,2))/(Afull**2).sum((0,2))
 Bcurve = np.zeros((len(ds),cpath.shape[1]))
 ndip = np.zeros((cpath.shape[1],),dtype='int')
 

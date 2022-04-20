@@ -178,6 +178,39 @@ def get_sph_points(r=85, d=10, N_gen=20000):
     epos += sph_center[:,None]
     return epos
 
+
+def get_surf_points(r=85, d=10, N_gen=2000):
+    """
+    Basic and very inefficient way to return uniform points on the surface of a sphere
+    with the center at (0,0,r) and radius r-d
+
+    Parameters
+    ----------
+    r : float
+        sphere center z position.
+    d : float
+        min distance from surface.
+    N_gen : int
+    Number of points to generate, note that the return number of points will be slightly smaller -
+    approximately resulting in N = N_gen*0.99
+
+    Returns
+    -------
+    epos : ndarray
+        Positions.
+    """
+    # Uniform points
+    epos = (np.random.rand(3, N_gen) - 0.5) * 2
+    # Distance from origo
+    dist = np.sqrt(np.sum(epos ** 2, 0))
+    sph_radius = r - d
+    # Scale to surface of sphere and filter out points very close to origo (to avoid numerical issues dividing by a small number)
+    epos = epos[:, dist > 0.01] / dist[dist > 0.01] * sph_radius
+    # move center
+    sph_center = np.array((0, 0, r))
+    epos += sph_center[:, None]
+    return epos
+
 def pos_back(coilcoords,dz=0.015, N=300):
     """
     Return a plane of random points with the size of the coil behind the coil at distance -dz
