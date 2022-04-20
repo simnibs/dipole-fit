@@ -9,7 +9,7 @@ import os
 import coilfitter as cf
 import sparsecoil as sc
 import trimesh
-
+print(os.getcwd())
 ## Load existing dipole model
 ccdfile = 'coildata/MagVenture_MC-B70_dipole-fit.ccd'
 dpos, dmoment = cf.readccd(ccdfile)
