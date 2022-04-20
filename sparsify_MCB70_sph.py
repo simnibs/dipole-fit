@@ -107,7 +107,6 @@ for i in range(1,cpath.shape[1],1):
     Asparse = sc.A_from_dipoles(cpath[:, i].reshape(3, -1).T[idx], coilcoords.T[idx], epos.reshape(3, -1).T)
     Asparse = Asparse.reshape(epos.shape[1:] + (3,))
     errA.append(((Asparse - Afull) ** 2).sum((0, 2)) / (Afull ** 2).sum((0, 2)))
-    print(f'{i}: {np.max(errA[-1])}')
     if np.max(errA[-1])<tol:
         break
 
